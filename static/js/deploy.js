@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+    // $("#bra").material_select();
+
     var uuid = $("#text-uuid").html();
 
     // 部署按钮

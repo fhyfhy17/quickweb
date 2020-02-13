@@ -22,8 +22,8 @@
                 <label class="col-sm-2 control-label">部署项目：</label>
 
 
-                <div class=" col-sm-4">
-                    <select id="pro" name="pro">
+                <div class=" col-sm-4 input-field">
+                    <select id="pro" name="pro" class="browser-default">
                         <option value="0" selected>-</option>
                         <option value="gm">gm</option>
                         <option value="project">project</option>
@@ -34,7 +34,7 @@
                 <label class="col-sm-2 control-label">目标服务器：</label>
 
                 <div class="col-sm-4">
-                    <select id="tar" name="tar">
+                    <select id="tar" name="tar" class="browser-default">
                         <option value="0" selected>-</option>
                         <option value="shenji">审计服</option>
                         <option value="gcp">gcp</option>
@@ -46,7 +46,7 @@
                 <label class="col-sm-2 control-label">分支：</label>
 
                 <div class=" col-sm-4">
-                    <select id="bra" name="bra">
+                    <select id="bra" name="bra" class="browser-default">
 
                     </select>
                 </div>
@@ -58,10 +58,10 @@
                 <a href="#" class="btn-showlog" data-wsurl="ws://localhost:8333/deploy/log">查看日志</a>
             </div>
 
-            <a href="#" class="exe">执行</a>
+{{/*            <a href="#" class="exe">执行</a>*/}}
 
             <br />
-            <div class="alert alert-warning col-sm-6" id="err">
+            <div class="" id="err">
                 <div class="header">{{.msg}}</div>
             </div>
 
