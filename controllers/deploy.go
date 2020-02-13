@@ -98,6 +98,7 @@ func (d *DeployController) Execute() {
 
 	if err := cmd.Start(); err != nil {
 		log.Printf("Error starting command: %s......", err.Error())
+		wsClose(uuid)
 		d.Data["json"] = "执行出错"
 		d.ServeJSON()
 		return
@@ -108,13 +109,21 @@ func (d *DeployController) Execute() {
 
 	if err := cmd.Wait(); err != nil {
 		log.Printf("Error waiting for command execution: %s......", err.Error())
+		wsClose(uuid)
 		d.Data["json"] = "执行出错"
 		d.ServeJSON()
 		return
 	}
-	fmt.Println("执行成了！！！！！")
+	wsClose(uuid)
 	d.Data["json"] = "执行成功"
 	d.ServeJSON()
+}
+func wsClose(uuid string) {
+	fmt.Println("ws准备关闭")
+	if ClientMap[uuid] != nil {
+		ClientMap[uuid].Close()
+		fmt.Println("ws关闭")
+	}
 }
 
 var upgrader = websocket.Upgrader{
@@ -132,20 +141,24 @@ func (c *DeployController) WebSocket() {
 		fmt.Println(err)
 		return
 	}
-
-	ClientMap[uuid] = conn
 	conn.SetCloseHandler(func(code int, text string) error {
 		fmt.Sprintf("websocket关闭，code=%d, text=%s", code, text)
 		delete(ClientMap, uuid)
+		c.Ctx.WriteString("")
 		return nil
 	})
+	ClientMap[uuid] = conn
 
-	//for {
-	//	//msgType, msg, err := conn.ReadMessage()
-	//	//if err != nil {
-	//	//	fmt.Println(err)
-	//	//	return
-	//	//}
+	for {
+		msgType, msg, err := conn.ReadMessage()
+		if err != nil {
+			//fmt.Println(err)
+			c.Ctx.WriteString("")
+			return
+		}
+		_ = msgType
+		_ = msg
+	}
 	//
 	//		time.Sleep(200 * time.Millisecond)
 	//		err = conn.WriteMessage(1, []byte("pong<br />"))
