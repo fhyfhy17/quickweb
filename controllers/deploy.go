@@ -159,15 +159,7 @@ func (c *DeployController) WebSocket() {
 		_ = msgType
 		_ = msg
 	}
-	//
-	//		time.Sleep(200 * time.Millisecond)
-	//		err = conn.WriteMessage(1, []byte("pong<br />"))
-	//		if err != nil {
-	//			fmt.Println(err)
-	//			return
-	//		}
-	//
-	//}
+
 	c.Ctx.WriteString("")
 
 }
