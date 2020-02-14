@@ -1,13 +1,13 @@
 package controllers
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 	"io"
 	"log"
 	"os/exec"
-	"strings"
 )
 
 type DeployController struct {
@@ -67,23 +67,17 @@ func (d *DeployController) GetBranches() {
 }
 
 func asyncLog(uuid string, reader io.ReadCloser) error {
-	cache := "" //缓存不足一行的日志信息
-	buf := make([]byte, 1024)
+	rd := bufio.NewReader(reader)
 	for {
-		num, err := reader.Read(buf)
-		if err != nil && err != io.EOF {
-			return err
+		content, err := rd.ReadString('\n')
+
+		if err != nil && len(content) == 0 {
+			break
 		}
-		if num > 0 {
-			b := buf[:num]
-			s := strings.Split(string(b), "\n")
-			line := strings.Join(s[:len(s)-1], "\n") //取出整行的日志
-			content := fmt.Sprintf("%v%v\n<br />", cache, line)
-			fmt.Println(content)
-			if ClientMap[uuid] != nil {
-				ClientMap[uuid].WriteMessage(1, []byte(content))
-			}
-			cache = s[len(s)-1]
+
+		fmt.Println("--------" + content)
+		if ClientMap[uuid] != nil {
+			ClientMap[uuid].WriteMessage(1, []byte(content+"<br />"))
 		}
 	}
 	return nil
@@ -91,6 +85,29 @@ func asyncLog(uuid string, reader io.ReadCloser) error {
 
 func (d *DeployController) Execute() {
 	uuid := d.GetString("uuid")
+	pro := d.GetString("pro")
+	tar := d.GetString("tar")
+	branch := d.GetString("bra")
+
+	fmt.Println(pro)
+	fmt.Println(tar)
+	fmt.Println(branch)
+
+	var shName string
+
+	//if pro=="project"{
+	//	shName="/home/jenkins/genBranches/ddddddd.sh"
+	//}else {
+	//	shName="/home/jenkins/genBranches/ddddddd.sh"
+	//}
+
+	if pro == "project" {
+		shName = "~/scripts/a1.sh"
+	} else {
+		shName = "~/scripts/a1.sh"
+	}
+	_ = shName
+	//cmd := exec.Command("sh", "-c", shName+" "+tar+" "+branch)
 	cmd := exec.Command("sh", "-c", "~/scripts/curl.sh")
 
 	stdout, _ := cmd.StdoutPipe()

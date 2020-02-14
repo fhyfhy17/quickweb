@@ -31,14 +31,13 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-2 control-label">目标服务器：</label>
+                <label class="col-sm-2 control-label" >目标服务器：</label>
 
                 <div class="col-sm-4">
                     <select id="tar" name="tar" class="browser-default">
                         <option value="0" selected>-</option>
-                        <option value="shenji">审计服</option>
-                        <option value="gcp">gcp</option>
-                        <option value="aws">aws</option>
+                        <option value="shenji">审计服(gcp部署)</option>
+                        <option value="test1">test1(aws部署)</option>
                     </select>
                 </div>
             </div>
@@ -52,9 +51,9 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-default ">提交</button>
             <br />
-            <div class="card-action">
+
+            <div>
                 <a href="#" class="btn-showlog" data-wsurl="ws://localhost:8333/deploy/log">查看日志</a>
             </div>
 

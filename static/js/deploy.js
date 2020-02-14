@@ -48,17 +48,23 @@ $(document).ready(function() {
 
     // 查看日志
     $(".btn-showlog").click(function () {
+        
+        var pro = $("#pro").val()
+        var tar = $("#tar").val()
+        var bra = $("#bra").val()
         var uuid = guid2()
 
         var url = $(this).attr("data-wsurl");
         url=url+"?uuid="+uuid
         var websocket = new WebSocket(url);
+        //执行部署脚本 
         $.ajax({
             type: "get",
             contentType: "application/json;charset=utf-8",
-            url: "/deploy/Execute?uuid="+uuid,
+            url: "/deploy/Execute?uuid="+uuid+"&pro="+pro+"&tar="+tar+"&bra="+bra,
             async: true
         })
+        //启动部署展示
         websocket.onmessage = function(event) {
             var msg = event.data;
             $("#layer-modal .modal-content>div").append(msg);
