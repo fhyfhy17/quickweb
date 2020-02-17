@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 	"io"
 	"log"
 	"os/exec"
+	"strings"
 )
 
 type DeployController struct {
@@ -50,18 +52,28 @@ func (d *DeployController) DoDeploy() {
 
 func (d *DeployController) GetBranches() {
 
-	//objs := make([]map[string]interface{}, 3)
-	//objs[0]=map[string]interface{}{"name":"name1","value":"value1"}
-	//objs[1]=map[string]interface{}{"name":"name2","value":"value2"}
-	//objs[2]=map[string]interface{}{"name":"name3","value":"value3"}
-
-	//objs := `[{"name":"name1","value":"value1"},{"name":"name2","value":"value2"},{"name":"name3","value":"value3"}]`
-
-	objs := make([]SelectModel, 3)
-	objs[0] = SelectModel{"name1", "value1"}
-	objs[1] = SelectModel{"name2", "value2"}
-	objs[2] = SelectModel{"name3", "value3"}
-
+	c := "svn://192.168.1.105/honeybadger/solitaire/branches"
+	cmd := exec.Command("svn", "list", c)
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return
+	}
+	str := out.String()
+	s := strings.Split(str, "\n")
+	i := len(s) - 1
+	split := append(s[:i])
+	objs := make([]SelectModel, len(split))
+	for i := range split {
+		split[i] = "branches/" + split[i]
+		fmt.Println(split[i])
+		objs[i] = SelectModel{split[i], split[i]}
+	}
+	objs = append(objs, SelectModel{"trunk/develop/", "trunk/develop/"})
 	d.Data["json"] = objs
 	d.ServeJSON()
 }
@@ -95,20 +107,15 @@ func (d *DeployController) Execute() {
 
 	var shName string
 
-	//if pro=="project"{
-	//	shName="/home/jenkins/genBranches/ddddddd.sh"
-	//}else {
-	//	shName="/home/jenkins/genBranches/ddddddd.sh"
-	//}
-
 	if pro == "project" {
-		shName = "~/scripts/a1.sh"
+		shName = "/home/jenkins/genBranches/ddddddd.sh"
 	} else {
-		shName = "~/scripts/a1.sh"
+		shName = "/home/jenkins/genBranches/ddddddd.sh"
 	}
+
 	_ = shName
-	//cmd := exec.Command("sh", "-c", shName+" "+tar+" "+branch)
-	cmd := exec.Command("sh", "-c", "~/scripts/curl.sh")
+	cmd := exec.Command("sh", "-c", shName+" "+branch+" "+beego.AppConfig.String(tar))
+	//cmd := exec.Command("sh", "-c", "~/scripts/curl.sh")
 
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
@@ -179,4 +186,7 @@ func (c *DeployController) WebSocket() {
 
 	c.Ctx.WriteString("")
 
+}
+func (c *DeployController) TT() {
+	fmt.Println(beego.AppConfig.String("aa"))
 }

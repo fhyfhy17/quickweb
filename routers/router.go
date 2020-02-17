@@ -11,5 +11,6 @@ func init() {
 	beego.Router("/deploy/doDeploy", &controllers.DeployController{}, "get:DoDeploy")
 	beego.Router("/deploy/getBranches", &controllers.DeployController{}, "get:GetBranches")
 	beego.Router("/deploy/Execute", &controllers.DeployController{}, "get:Execute")
+	beego.Router("/deploy/TT", &controllers.DeployController{}, "get:TT")
 	beego.Router("/deploy/log", &controllers.DeployController{}, "get:WebSocket")
 }

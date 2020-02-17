@@ -12,16 +12,32 @@ $(document).ready(function() {
 
     // 重启按钮
     $("#btn-restart").click(function () {
-        ajaxShell("../restart", {uuid: uuid}, function() {
+        ajaxShell("../restart", {uuid: uuid}, function () {
         });
     });
 
     // 停止按钮
     $("#btn-stop").click(function () {
-        ajaxShell("../stop", {uuid: uuid}, function() {
+        ajaxShell("../stop", {uuid: uuid}, function () {
         });
     });
 
+    $(".cc").click(function () {
+        $.ajax({
+            type: "get",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            url: "/deploy/TT",
+            success: function (result) {
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+                console.log(errorThrown)
+            },
+            async: false
+        });
+    });
     $(".exe").click(function () {
         $.ajax({
             type: "get",
@@ -31,7 +47,7 @@ $(document).ready(function() {
             success: function (result) {
                 console.log("大" + result)
             },
-          error: function (XMLHttpRequest, textStatus, errorThrown) {
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
               alert(errorThrown);
               console.log(errorThrown)
           },
@@ -84,20 +100,22 @@ $(document).ready(function() {
     $(".btn-clear-log").click(function () {
         $("#layer-modal .modal-content>div").html("")
     })
-    
+
+
     /**
      *加载分支
      * */
-    $("#bra").click(function () {
+    $("#bra").one("click", function () {
         $("#bra").html("");
         $.ajax({
-                type: "get",
-                dataType: "json",
-                contentType: "application/json;charset=utf-8",
-                url: "/deploy/getBranches",
-                success: function (result) {
-                    $.each(result, function (index, value) {
-                        $("#bra").append("<option value='" + value.Value + "'>" + value.Name + "</option>");
+            type: "get",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            url: "/deploy/getBranches",
+            success: function (result) {
+                $.each(result, function (index, value) {
+                    console.log(value.Value + " --- " + value.Name)
+                    $("#bra").append("<option value='" + value.Value + "'>" + value.Name + "</option>");
                     })
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
