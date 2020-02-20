@@ -90,6 +90,16 @@ func removeEmpty(s []string) []string {
 	return s[:i]
 }
 
+func removeEmpty2(s []string) []string {
+	newSlice := s[:0]
+	for _, v := range s {
+		if v != "" {
+			newSlice = append(newSlice, v)
+		}
+	}
+	return newSlice
+}
+
 func asyncLog(uuid string, reader io.ReadCloser) error {
 	rd := bufio.NewReader(reader)
 	for {
