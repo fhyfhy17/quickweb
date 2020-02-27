@@ -73,17 +73,39 @@ func (d *DeployController) GetBranches() {
 	}
 	str := out.String()
 	s := strings.Split(str, "\n")
-	i := len(s) - 1
-	split := append(s[:i])
-	objs := make([]SelectModel, len(split))
-	for i := range split {
-		split[i] = "branches/" + split[i]
-		fmt.Println(split[i])
-		objs[i] = SelectModel{split[i], split[i]}
+	//s = append(s[:len(s)-1])
+	s = removeEmpty(s)
+	objs := make([]SelectModel, len(s))
+	for i := range s {
+		s[i] = "branches/" + s[i]
+		fmt.Println(s[i])
+		objs[i] = SelectModel{s[i], s[i]}
 	}
 	objs = append(objs, SelectModel{"trunk/develop/", "trunk/develop/"})
 	d.Data["json"] = objs
 	d.ServeJSON()
+}
+
+func removeEmpty(s []string) []string {
+	i := 0
+	for v := range s {
+		if s[v] == "" {
+			continue
+		}
+		s[i] = s[v]
+		i++
+	}
+	return s[:i]
+}
+
+func removeEmpty2(s []string) []string {
+	newSlice := s[:0]
+	for _, v := range s {
+		if v != "" {
+			newSlice = append(newSlice, v)
+		}
+	}
+	return newSlice
 }
 
 func asyncLog(uuid string, reader io.ReadCloser) error {
