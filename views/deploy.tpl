@@ -91,6 +91,9 @@
                         <option value="3.136.105.125">aws_game2</option>
                         <option value="3.134.138.162">aws_login</option>
                         <option value="3.135.158.253">aws_gm</option>
+                        <option value="192.168.1.35">35测试</option>
+                        <option value="192.168.1.105">105测试</option>
+                        <option value="35.237.208.138">提审服</option>
                     </select>
                     <label class="select-label">选择要下载的服务器</label>
                 </div>
@@ -121,6 +124,7 @@
                             <option value="3.135.158.253">aws_gm</option>
                             <option value="192.168.1.35">35测试</option>
                             <option value="192.168.1.105">105测试</option>
+                            <option value="35.237.208.138">提审服</option>
                         </select>
                         <label class="select-label">请选择要上传的服务器</label>
                     </div>

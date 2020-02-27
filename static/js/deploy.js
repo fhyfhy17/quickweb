@@ -41,7 +41,7 @@ $(document).ready(function() {
 
     $(".ReceiveFile").click(function () {
 
-        window.location.href = "/deploy/ReceiveFile?remote_ip_down=" + $("#remote_ip").val() + "&downPath=" + $("#downPath").val();
+        window.location.href = "/deploy/ReceiveFile?remote_ip_down=" + $("#remote_ip_down").val() + "&downPath=" + $("#downPath").val();
     });
 
 
