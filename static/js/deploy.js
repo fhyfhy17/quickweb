@@ -38,6 +38,32 @@ $(document).ready(function() {
             async: false
         });
     });
+
+    $(".ReceiveFile").click(function () {
+
+        window.location.href = "/deploy/ReceiveFile?remote_ip_down=" + $("#remote_ip").val() + "&downPath=" + $("#downPath").val();
+    });
+
+
+    $(".PushToFormal").click(function () {
+        $.ajax({
+            type: "get",
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            url: "/deploy/PushToFormal?push_remote_ip=" + $("#push_remote_ip").val(),
+            success: function (result) {
+                console.log(result)
+                alert(result)
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+                console.log(errorThrown)
+            },
+            async: false
+        });
+    })
+
+
     $(".exe").click(function () {
         $.ajax({
             type: "get",
@@ -73,15 +99,28 @@ $(document).ready(function() {
         var url = $(this).attr("data-wsurl");
         url=url+"?uuid="+uuid
         var websocket = new WebSocket(url);
+        var failResult = false
         //执行部署脚本 
         $.ajax({
             type: "get",
             contentType: "application/json;charset=utf-8",
-            url: "/deploy/Execute?uuid="+uuid+"&pro="+pro+"&tar="+tar+"&bra="+bra,
-            async: true
+            url: "/deploy/Execute?uuid=" + uuid + "&pro=" + pro + "&tar=" + tar + "&bra=" + bra,
+            success: function (result) {
+                alert(result)
+                failResult = true
+                return
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+                console.log(errorThrown)
+            },
+            async: false
         })
+        if (failResult) {
+            return
+        }
         //启动部署展示
-        websocket.onmessage = function(event) {
+        websocket.onmessage = function (event) {
             var msg = event.data;
             $("#layer-modal .modal-content>div").append(msg);
             console.log(msg)
