@@ -116,9 +116,7 @@ $(document).ready(function() {
             },
             async: false
         })
-        if (failResult) {
-            return
-        }
+
         //启动部署展示
         websocket.onmessage = function (event) {
             var msg = event.data;
