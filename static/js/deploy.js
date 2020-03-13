@@ -107,14 +107,12 @@ $(document).ready(function() {
             url: "/deploy/Execute?uuid=" + uuid + "&pro=" + pro + "&tar=" + tar + "&bra=" + bra,
             success: function (result) {
                 alert(result)
-                failResult = true
-                return
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 alert(errorThrown);
                 console.log(errorThrown)
             },
-            async: false
+            async: true
         })
 
         //启动部署展示

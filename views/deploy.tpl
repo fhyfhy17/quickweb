@@ -17,73 +17,14 @@
     <h1 class="logo" align="center">部署</h1>
 </header>
 <div>
-    <div class=" container row col s12 ">
-        <div class=" container mdi-border ">
-            <form action="/deploy/doDeploy" method="get">
 
-                <div class="row">
-                    <div class="input-field col s6">
-
-                        <select id="pro" name="pro" class="browser-default select-wrapper ">
-                            <option value="0" selected>-</option>
-                            <option value="gm">gm</option>
-                            <option value="project">project</option>
-                        </select>
-
-                        <label class="select-label">部署项目：</label>
-                    </div>
-
-                </div>
-
-                <div class="row">
-                    <div class="input-field col s6">
-                        <select id="tar" name="tar" class="browser-default select-wrapper ">
-                            <option value="0" selected>-</option>
-                            <option value="shenji">审计服(gcp部署)</option>
-                            <option value="awstest">test(aws部署)</option>
-                        </select>
-                        <label class="select-label">目标服务器：</label>
-                    </div>
-                </div>
-
-
-                <div class="row">
-                    <div class="input-field col s6">
-                        <select id="bra" name="bra" class="browser-default select-wrapper ">
-
-                        </select>
-                        <label class="select-label">分支：</label>
-                    </div>
-                </div>
-
-                <br/>
-
-                <div>
-                    <a href="#" class="btn-large btn-showlog" data-wsurl="ws://192.168.1.105:8333/deploy/log">执行部署</a>
-
-                    {{/*                <a href="#" class="btn-large btn-showlog" data-wsurl="ws://localhost:8333/deploy/log">执行部署</a>*/}}
-
-
-                </div>
-
-
-                <br/>
-                {{/*                <div class="" id="err">*/}}
-                {{/*                    <div class="header">{{.msg}}</div>*/}}
-                {{/*                </div>*/}}
-
-
-            </form>
-
-        </div>
-    </div>
     <br/>
 
     <div class="container row col s12">
         <p>下载</p>
         <div class=" container mdi-border ">
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s12">
                     <select id="remote_ip_down" name="remote_ip_down" class="browser-default select-wrapper ">
                         <option value="35.196.251.9">gcp_game1</option>
                         <option value="3.134.23.224">aws_center</option>
@@ -94,12 +35,14 @@
                         <option value="192.168.1.35">35测试</option>
                         <option value="192.168.1.105">105测试</option>
                         <option value="35.237.208.138">提审服</option>
+                        <option value="10.227.136.93">aws island 正式服</option>
+                        <option value="10.227.68.246">aws 测试服</option>
                     </select>
                     <label class="select-label">选择要下载的服务器</label>
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s12">
                     <input type="text" placeholder="请输入完整文件路径" id="downPath" name="downPath" class="validate">
                     <label for="downPath">要下载的文件</label>
                 </div>
@@ -114,7 +57,7 @@
         <div class=" container mdi-border ">
             <form id="fform" method="POST" enctype="multipart/form-data" action="/deploy/SendFile" class="col s12">
                 <div class="row">
-                    <div class="input-field col s6">
+                    <div class="input-field col s12">
                         <select id="remote_ip" name="remote_ip" class="browser-default select-wrapper">
                             <option value="35.196.251.9">gcp_game1</option>
                             <option value="3.134.23.224">aws_center</option>
@@ -125,12 +68,17 @@
                             <option value="192.168.1.35">35测试</option>
                             <option value="192.168.1.105">105测试</option>
                             <option value="35.237.208.138">提审服</option>
+
+                            <option value="10.227.136.93">aws island 正式服</option>
+                            <option value="10.227.68.246">aws 测试服</option>
                         </select>
                         <label class="select-label">请选择要上传的服务器</label>
                     </div>
                 </div>
+
+
                 <div class="row">
-                    <div class="input-field col s6">
+                    <div class="input-field col s12">
                         <label for="upPath">上传路径</label>
                         <input type="text" name="upPath" id="upPath"
                                placeholder="上传路径： 除文件名以外的完整路径 例 /usr/local/games/bin"
@@ -138,19 +86,82 @@
                     </div>
                 </div>
                 <div class="row">
-                    <input id="upFile" name="upFile" type="file"/>
+                    <input id="upFile" multiple name="upFile" type="file"/>
                     <input type="submit" class=" btn-large" value="上传"/>
                 </div>
 
 
             </form>
         </div>
+        <br/><br/><br/>
+        <p>部署</p>
+        <div class=" container row col s12 ">
+            <div class=" container mdi-border ">
+                <form action="/deploy/doDeploy" method="get">
 
-        <br/><br/>
+                    <div class="row">
+                        <div class="input-field col s12">
+
+                            <select id="pro" name="pro" class="browser-default select-wrapper ">
+                                <option value="0" selected>-</option>
+                                <option value="gm">gm</option>
+                                <option value="project">project</option>
+                            </select>
+
+                            <label class="select-label">部署项目：</label>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <select id="tar" name="tar" class="browser-default select-wrapper ">
+                                <option value="0" selected>-</option>
+                                <option value="35.237.208.138">审计服(gcp部署)</option>
+                                <option value="10.227.68.246">test(aws部署)</option>
+                                <option value="10.227.136.93">aws island正式服部署</option>
+                            </select>
+                            <label class="select-label">目标服务器：</label>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <select id="bra" name="bra" class="browser-default select-wrapper ">
+
+                            </select>
+                            <label class="select-label">分支：</label>
+                        </div>
+                    </div>
+
+                    <br/>
+
+                    <div>
+                        <a href="#" class="btn-large btn-showlog"
+                           data-wsurl="ws://192.168.1.105:8333/deploy/log">执行部署</a>
+
+                        {{/*                <a href="#" class="btn-large btn-showlog" data-wsurl="ws://localhost:8333/deploy/log">执行部署</a>*/}}
+
+
+                    </div>
+
+
+                    <br/>
+                    {{/*                <div class="" id="err">*/}}
+                    {{/*                    <div class="header">{{.msg}}</div>*/}}
+                    {{/*                </div>*/}}
+
+
+                </form>
+
+            </div>
+        </div>
+        <br/><br/><br/>
         <p>推送到正式服</p>
         <div class=" container mdi-border ">
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s12">
                     <select id="push_remote_ip" name="push_remote_ip" class="browser-default select-wrapper">
                         <option value="35.196.251.9">gcp_game1</option>
                         <option value="3.134.23.224">aws_center</option>
@@ -158,13 +169,15 @@
                         <option value="3.136.105.125">aws_game2</option>
                         <option value="3.134.138.162">aws_login</option>
                         <option value="3.135.158.253">aws_gm</option>
+
+                        <option value="10.227.136.93">aws island 正式服(还没有测试服，等新测试服)</option>
                     </select>
                     <label class="select-label">gcp会把审计服已有的包推送，aws会把测试服已有的包推送选择推送到的服务器</label>
 
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s12">
                     <a href="#" class="PushToFormal btn-large ">确认推送</a>
                 </div>
             </div>
@@ -183,9 +196,9 @@
         </div>
 
     </div>
-    <script src="/static/js/jquery1.11.3.min.js"></script>
-    <script src="/static/js/materialize.min.js"></script>
-    <script src="/static/js/deploy.js"></script>
+</div>
+<script src="/static/js/jquery1.11.3.min.js"></script>
+<script src="/static/js/materialize.min.js"></script>
+<script src="/static/js/deploy.js"></script>
 </body>
 </html>
--

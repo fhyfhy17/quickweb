@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"archive/zip"
 	"bufio"
 	"bytes"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
@@ -14,7 +16,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -151,13 +152,13 @@ func (d *DeployController) Execute() {
 	var shName string
 
 	if pro == "project" {
-		shName = "/home/jenkins/genBranches/ddddddd.sh"
+		shName = "/home/jenkins/genBranches/deploy2.sh"
 	} else {
-		shName = "/home/jenkins/genBranches/ddddddd.sh"
+		shName = "/home/jenkins/genBranches/deployGM2.sh"
 	}
 
 	_ = shName
-	cmd := exec.Command("sh", "-c", shName+" "+branch+" "+beego.AppConfig.String(tar))
+	cmd := exec.Command("sh", "-c", shName+" "+branch+" "+tar) //beego.AppConfig.String(tar))
 	//cmd := exec.Command("sh", "-c", "~/scripts/curl.sh")
 
 	stdout, _ := cmd.StdoutPipe()
@@ -264,31 +265,90 @@ func (c *DeployController) ReceiveFile() {
 
 	msg := ""
 
-	srcFile, err := sftpClient.Open(remoteFilePath)
-	if err != nil {
-		msg = fmt.Sprintln(err)
-		returnMsg(c, msg)
-		return
-	}
-	defer srcFile.Close()
-	addr := filepath.Join(cachePath, filepath.Base(remoteFilePath))
-	dstFile, err := os.Create(addr)
-	if err != nil {
-		msg = fmt.Sprintln(err)
-		returnMsg(c, msg)
-		return
-	}
-	defer dstFile.Close()
+	//srcFile, err := sftpClient.Open(remoteFilePath)
+	//if err != nil {
+	//	msg = fmt.Sprintln(err)
+	//	returnMsg(c, msg)
+	//	return
+	//}
+	os.Mkdir(cachePath, os.ModePerm)
 
-	if _, err = srcFile.WriteTo(dstFile); err != nil {
-		msg = fmt.Sprintln(err)
-		returnMsg(c, msg)
-		return
+	walk := sftpClient.Walk(remoteFilePath)
+	for walk.Step() {
+		stat := walk.Stat()
+		if stat.IsDir() {
+			os.Mkdir(filepath.Join(cachePath, walk.Path()), os.ModePerm)
+		} else {
+			fmt.Println(walk.Path(), "  ----")
+			fmt.Println(stat.Name(), " =====")
+			srcFile, err := sftpClient.Open(walk.Path())
+			if err != nil {
+				msg = fmt.Sprintln(err)
+				returnMsg(c, msg)
+				return
+			}
+
+			defer srcFile.Close()
+			addr := filepath.Join(cachePath, filepath.Base(walk.Path()))
+			dstFile, err := os.Create(addr)
+			if err != nil {
+				msg = fmt.Sprintln(err)
+				returnMsg(c, msg)
+				return
+			}
+			defer dstFile.Close()
+
+			if _, err = srcFile.WriteTo(dstFile); err != nil {
+				msg = fmt.Sprintln(err)
+				returnMsg(c, msg)
+				return
+			}
+		}
 	}
 
 	msg = fmt.Sprintln("取得文件成功!")
 	fmt.Println(msg)
-	c.Ctx.Output.Download(addr, filepath.Base(addr))
+	downFileName := filepath.Base(downPath) + ".tar"
+	err = Zip(cachePath, downFileName, "")
+	if err != nil {
+		msg = fmt.Sprintln(err)
+		returnMsg(c, msg)
+		return
+	}
+	err = os.RemoveAll(cachePath)
+	fmt.Println(err)
+	defer os.Remove(downFileName)
+	c.Ctx.Output.Download(downFileName, filepath.Base(downPath)+".tar")
+}
+
+func delAllFilesOfDir(removePath string) {
+	filepath.Walk(removePath, func(path string, info os.FileInfo, err error) error {
+
+		if path == removePath {
+			return nil
+		}
+		if !Exists(path) {
+			return nil
+		}
+		if info.IsDir() {
+			os.RemoveAll(path)
+			return nil
+		}
+		fmt.Println(path + "~~~~")
+		os.Remove(path)
+
+		return nil
+	})
+}
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
 }
 
 func (c *DeployController) SendFile() {
@@ -296,22 +356,27 @@ func (c *DeployController) SendFile() {
 		err        error
 		sftpClient *sftp.Client
 	)
-	f, h, _ := c.GetFile("upFile")
+	files, err := c.GetFiles("upFile")
+	if err != nil {
+		msg := fmt.Sprintln(err)
+		returnMsg(c, msg)
+		return
+	}
 	remoteIp := c.GetString("remote_ip")
 	upPath := c.GetString("upPath")
 
-	ext := path.Ext(h.Filename)
+	//ext := path.Ext(h.Filename)
 	//验证后缀名是否符合要求
-	var AllowExtMap map[string]bool = map[string]bool{
-		".jpg":  true,
-		".jpeg": true,
-		".png":  true,
-		".gz":   true,
-	}
-	if _, ok := AllowExtMap[ext]; !ok {
-		c.Ctx.WriteString("后缀名不符")
-		return
-	}
+	//var AllowExtMap map[string]bool = map[string]bool{
+	//	".jpg":  true,
+	//	".jpeg": true,
+	//	".png":  true,
+	//	".gz":   true,
+	//}
+	//if _, ok := AllowExtMap[ext]; !ok {
+	//	c.Ctx.WriteString("后缀名不符")
+	//	return
+	//}
 
 	sshKeyPath := beego.AppConfig.String("sshKeyPath")
 	msg := ""
@@ -329,23 +394,34 @@ func (c *DeployController) SendFile() {
 	// 用来测试的本地文件路径 和 远程机器上的文件夹
 
 	var remoteDir = upPath
-	defer f.Close()
-	slash := filepath.ToSlash(filepath.Join(remoteDir, filepath.Base(h.Filename)))
-	dstFile, err := sftpClient.Create(slash)
-	if err != nil {
-		msg = fmt.Sprintln(err)
-		returnMsg(c, msg)
-		return
-	}
-	defer dstFile.Close()
 
-	bs, err := ioutil.ReadAll(f)
-	if err != nil {
-		msg = fmt.Sprintln(err)
-		returnMsg(c, msg)
-		return
+	for _, fh := range files {
+		f, err := fh.Open()
+		if err != nil {
+			msg = fmt.Sprintln(err)
+			returnMsg(c, msg)
+			return
+		}
+
+		defer f.Close()
+		slash := filepath.ToSlash(filepath.Join(remoteDir, filepath.Base(fh.Filename)))
+		dstFile, err := sftpClient.Create(slash)
+		if err != nil {
+			msg = fmt.Sprintln(err)
+			returnMsg(c, msg)
+			return
+		}
+		defer dstFile.Close()
+
+		bs, err := ioutil.ReadAll(f)
+		if err != nil {
+			msg = fmt.Sprintln(err)
+			returnMsg(c, msg)
+			return
+		}
+		dstFile.Write(bs)
 	}
-	dstFile.Write(bs)
+
 	msg = fmt.Sprintln("发送文件成功!")
 	fmt.Println(msg)
 	returnMsg(c, msg)
@@ -429,7 +505,7 @@ func (d *DeployController) PushToFormal() {
 	if host == "35.196.251.9" {
 		shName = "/home/jenkins/genBranches/pushTiShenToFormal.sh"
 	} else {
-		shName = "/home/jenkins/genBranches/pushTiShenToFormal.sh"
+		shName = "/home/jenkins/genBranches/pushawstestToFormal.sh"
 	}
 
 	cmd := exec.Command("sh", "-c", shName+" "+host)
@@ -476,4 +552,104 @@ func (d *DeployController) PushToFormal() {
 	}
 	d.Data["json"] = "执行成功"
 	d.ServeJSON()
+}
+
+func Zip(source, target, filter string) error {
+	var err error
+	if isAbs := filepath.IsAbs(source); !isAbs {
+		source, err = filepath.Abs(source) // 将传入路径直接转化为绝对路径
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	//创建zip包文件
+	zipfile, err := os.Create(target)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	defer func() {
+		if err := zipfile.Close(); err != nil {
+			log.Fatalf("*File close error: %s, file: %s", err.Error(), zipfile.Name())
+		}
+	}()
+
+	//创建zip.Writer
+	zw := zip.NewWriter(zipfile)
+
+	defer func() {
+		if err := zw.Close(); err != nil {
+			log.Fatalf("zipwriter close error: %s", err.Error())
+		}
+	}()
+
+	info, err := os.Stat(source)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	var baseDir string
+	if info.IsDir() {
+		baseDir = filepath.Base(source)
+	}
+
+	err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if filter != "" {
+			ism, err := filepath.Match(filter, info.Name())
+
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			if ism {
+				return nil
+			}
+		}
+
+		//创建文件头
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if baseDir != "" {
+			header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, source))
+		}
+
+		if info.IsDir() {
+			header.Name += "/"
+		} else {
+			header.Method = zip.Deflate
+		}
+		//写入文件头信息
+		writer, err := zw.CreateHeader(header)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+		//写入文件内容
+		file, err := os.Open(path)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		defer file.Close()
+
+		_, err = io.Copy(writer, file)
+
+		return errors.WithStack(err)
+	})
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
