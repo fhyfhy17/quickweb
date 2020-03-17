@@ -271,6 +271,7 @@ func (c *DeployController) ReceiveFile() {
 	//	returnMsg(c, msg)
 	//	return
 	//}
+	os.RemoveAll(cachePath)
 	os.Mkdir(cachePath, os.ModePerm)
 
 	walk := sftpClient.Walk(remoteFilePath)
@@ -315,9 +316,6 @@ func (c *DeployController) ReceiveFile() {
 		returnMsg(c, msg)
 		return
 	}
-	err = os.RemoveAll(cachePath)
-	fmt.Println(err)
-	defer os.Remove(downFileName)
 	c.Ctx.Output.Download(downFileName, filepath.Base(downPath)+".tar")
 }
 
